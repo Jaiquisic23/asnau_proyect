@@ -1,39 +1,48 @@
-import ply.lex as lex
+import ply.lex as Lexer
 
-tokens = {'NUMBER', 'PLUS', 'MINUS','TIMES','DIVIDE','LPAREN','RPAREN'}
+class BasicLexer(Lexer):
+    tokens = { NAME, NUMBER, STRING, IF, WHILE, ARROW, EQEQ }
+    ignore = '\t '
 
-t_PLUS = r'\+'
-t_MINUS = r'\-'
-t_TIMES = r'\*'
-t_DIVIDES = r'/'
-t_LPAREN = r'\('
-t_RPAREN = r'\)'
+    literals = { '=', '+', '-', '/', '*', '(', ')', ',', ';' }
 
+    # Define tokens
+    IF = r'IF'
+    THEN = r'THEN'
+    ELSE = r'ELSE'
+    FOR = r'FOR'
+    FUN = r'FUN'
+    TO = r'TO'
+    ARROW = r'->'
+    NAME = r'[a-zA-Z_][a-zA-Z0-9_]*'
+    STRING = r'\".*?\"'
 
-def t_NUMBER(t):
-    r'\d+'
-    t.value = int(t.value)
-    return t
+    EQEQ = r'=='
 
-def t_newline(t):
-    r'\n+'
-    t.lexer.lineno += len(t.value)
-    pass
+    @_(r'\d+')
+    def NUMBER(self, t):
+        t.value = int(t.value)
+        return t
 
-def t_error(t):
-    print("Illegal character '%s" %t.value[0])
-    t.lexer.skip(1)
+    @_(r'#.*')
+    def COMMENT(self, t):
+        pass
 
-lexer = lex.lex()
-
-data = "3+4*10+-20*2"
-
-lexer.input(data)
-
-while True:
-    tok=lexer.token()
-    if not tok:
-        break
-    print(tok)
+    @_(r'\n+')
+    def newline(self,t ):
+        self.lineno = t.value.count('\n')
 
 
+
+if __name__ == '__main__':
+    lexer = BasicLexer()
+    env = {}
+    while True:
+        try:
+            text = input('basic > ')
+        except EOFError:
+            break
+        if text:
+            lex = lexer.tokenize(text)
+            for token in lex:
+                print(token)
